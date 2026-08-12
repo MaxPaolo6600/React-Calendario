@@ -27,7 +27,7 @@ export default function Header() {
     return (
         <header className="flex justify-around items-center bg-[#212121] h-18">
             <img src={logo} alt="logo" className="w-40" onClick={() => navigate("/")} />
-            <h3 className="text-white">Primeiro Projeto TUIUTI</h3>
+            <h3 className="text-white">Projeto Interdisciplinar TUIUTI</h3>
             <div>
                 {user ? (
                     <div className="flex">

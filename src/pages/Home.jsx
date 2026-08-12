@@ -47,6 +47,22 @@ export default function Home() {
         }
     }
 
+    async function excluirPost(id) {
+        try {
+            const { error } = await supabase
+                .from("posts")
+                .delete()
+                .eq("id", id);
+            if (error) {
+                console.log("Erro ao deletar:", error);
+                return;
+            }
+            await buscarPosts();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-[#262B2D]">
             <Header />
@@ -66,6 +82,12 @@ export default function Home() {
                         {post.map((postes) => (
                             <div key={postes.id} className="bg-[#262B2D] border border-[#212121] rounded-xl shadow-md w-100 h-75">
                                 <div className="m-5">
+                                    <button
+                                        onClick={excluirPost}
+                                        className="text-white/60 hover:text-white text-xl"
+                                    >
+                                        ✕
+                                    </button>
                                     <h1 className="text-white text-2xl font-semibold rounded-2xl bg-[#212121] p-2">{postes.titulo_post}</h1>
                                     <h1 className="text-white mt-5 border border-[#137FA8] rounded-2xl p-2">{postes.conteudo_post}</h1>
                                 </div>
