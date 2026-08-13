@@ -70,7 +70,7 @@ export default function Home() {
                 <div className="mt-20 flex items-center flex-col">
                     <h1 className="font-semibold text-3xl text-white">Essa é a página Home, crie sua conta</h1>
                     <button
-                        className="mt-5 text-2xl text-white w-100 rounded-2xl bg-linear-to-bl from-[#274E5D] to-[#137FA8]"
+                        className="mt-5 text-2xl text-white w-100 rounded-2xl bg-[#137FA8] hover:bg-[#274E5D]"
                         onClick={() => navigate("/Cadastrar")}
                     >
                         Criar Conta
@@ -83,7 +83,7 @@ export default function Home() {
                             <div key={postes.id} className="bg-[#262B2D] border border-[#212121] rounded-xl shadow-md w-100 h-75">
                                 <div className="m-5">
                                     <button
-                                        onClick={excluirPost}
+                                        onClick={() => excluirPost(postes.id)}
                                         className="text-white/60 hover:text-white text-xl"
                                     >
                                         ✕

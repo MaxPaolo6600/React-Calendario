@@ -7,6 +7,10 @@ export default function Cadastrar() {
     const navigate = useNavigate();
     const [form, setForm] = useState({ email: "", senha: "" });
 
+    function mudancaValores(e) {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    }
+
     async function cadastrar(e) {
         e.preventDefault();
         try {
@@ -14,9 +18,6 @@ export default function Cadastrar() {
                 email: form.email,
                 password: form.senha
             });
-            if (error) {
-                return;
-            }
             navigate("/");
             alert("Conta criada");
             setForm({
@@ -39,11 +40,9 @@ export default function Cadastrar() {
                         E-mail
                     </label>
                     <input
+                        name="email"
                         type="email"
-                        value={form.email}
-                        onChange={(e) =>
-                            setForm({ ...form, email: e.target.value })
-                        }
+                        onChange={mudancaValores}
                         className="w-full rounded-lg bg-[#D9D9D9] px-4 py-3"
                     />
                 </div>
@@ -52,11 +51,9 @@ export default function Cadastrar() {
                         Senha
                     </label>
                     <input
+                        name="senha"
                         type="password"
-                        value={form.senha}
-                        onChange={(e) =>
-                            setForm({ ...form, senha: e.target.value })
-                        }
+                        onChange={mudancaValores}
                         className="w-full rounded-lg bg-[#D9D9D9] px-4 py-3"
                     />
                 </div>
