@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header"
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient"
-import { trace, SpanStatusCode } from "@opentelemetry/api";
+import { withSpan } from "../telemetry";
 
 import mais from "../assets/mais.png"
 
 export default function Home() {
-    const tracer = trace.getTracer("calendario-react"); // negocio de pegar os dados (funciona eu acho)
+    // negocio de pegar os dados (funciona eu acho)
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [post, setPost] = useState([]);
@@ -17,151 +17,93 @@ export default function Home() {
     useEffect(() => { buscarPosts(); }, []);
 
     async function buscarPosts() {
-    const span = tracer.startSpan("calendar.get_posts");
-
-    span.setAttribute("app.nome", "Calendario React");
-    span.setAttribute("db.system", "Supabase");
-    span.setAttribute("db.operation", "SELECT");
-    span.setAttribute("db.table", "posts");
-
-    try {
-        const { data, error } = await supabase
-            .from("posts")
-            .select("*");
-
-        if (error) {
-            span.recordException(error);
-            span.setStatus({
-                code: SpanStatusCode.ERROR,
-                message: error.message,
-            });
-
-            console.log(error);
-            return;
-        }
-
-        span.setAttribute("db.rows_returned", data?.length ?? 0);
-
-        span.setStatus({
-            code: SpanStatusCode.OK,
-        });
-
-        setPost(data);
-    } catch (error) {
-        span.recordException(error);
-
-        span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: error.message,
-        });
-
-        console.log(error);
-    } finally {
-        span.end();
-    }
-}
-    async function criarPost() {
-    const span = tracer.startSpan("calendar.create_post");
-
-    span.setAttribute("app.nome", "Calendario React");
-    span.setAttribute("db.system", "Supabase");
-    span.setAttribute("db.operation", "INSERT");
-    span.setAttribute("db.table", "posts");
-
-    try {
-        const { data, error } = await supabase
-            .from("posts")
-            .insert([
+        try {
+            const { data, error } = await withSpan(
+                "calendar.get_posts",
                 {
-                    titulo_post: formData.titulo_post,
-                    conteudo_post: formData.conteudo_post
-                }
-            ]);
+                    "db.system": "Supabase",
+                    "db.operation": "SELECT",
+                    "db.table": "posts"
+                },
+                () => supabase
+                    .from("posts")
+                    .select("*")
+            );
 
-        if (error) {
-            span.recordException(error);
+            if (error) {
+                console.log(error);
+                return;
+            }
 
-            span.setStatus({
-                code: SpanStatusCode.ERROR,
-                message: error.message,
+            setPost(data);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    async function criarPost() {
+        try {
+            const { error } = await withSpan(
+                "calendar.create_post",
+                {
+                    "db.system": "Supabase",
+                    "db.operation": "INSERT",
+                    "db.table": "posts"
+                },
+                () => supabase
+                    .from("posts")
+                    .insert([
+                        {
+                            titulo_post: formData.titulo_post,
+                            conteudo_post: formData.conteudo_post
+                        }
+                    ])
+            );
+
+            if (error) {
+                return;
+            }
+
+            setFormData({
+                titulo_post: "",
+                conteudo_post: ""
             });
 
-            console.log("Erro ao criar post:", error);
-            return;
+            setOpen(false);
+
+            await buscarPosts();
+
+        } catch (error) {
+            console.log(error);
         }
-
-        span.setStatus({
-            code: SpanStatusCode.OK,
-        });
-
-        setFormData({
-            titulo_post: "",
-            conteudo_post: ""
-        });
-
-        setOpen(false);
-
-        await buscarPosts();
-
-    } catch (error) {
-        span.recordException(error);
-
-        span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: error.message,
-        });
-
-        console.log(error);
-    } finally {
-        span.end();
     }
-}
 
     async function excluirPost(id) {
-    const span = tracer.startSpan("calendar.delete_post");
+        try {
+            const { error } = await withSpan(
+                "calendar.delete_post",
+                {
+                    "db.system": "Supabase",
+                    "db.operation": "DELETE",
+                    "db.table": "posts"
+                },
+                () => supabase
+                    .from("posts")
+                    .delete()
+                    .eq("id", id)
+            );
 
-    span.setAttribute("app.nome", "Calendario React");
-    span.setAttribute("db.system", "Supabase");
-    span.setAttribute("db.operation", "DELETE");
-    span.setAttribute("db.table", "posts");
+            if (error) {
+                console.log("Erro ao deletar:", error);
+                return;
+            }
 
-    try {
-        const { error } = await supabase
-            .from("posts")
-            .delete()
-            .eq("id", id);
+            await buscarPosts();
 
-        if (error) {
-            span.recordException(error);
-
-            span.setStatus({
-                code: SpanStatusCode.ERROR,
-                message: error.message,
-            });
-
-            console.log("Erro ao deletar:", error);
-            return;
+        } catch (error) {
+            console.log(error);
         }
-
-        span.setStatus({
-            code: SpanStatusCode.OK,
-        });
-
-        await buscarPosts();
-
-    } catch (error) {
-        span.recordException(error);
-
-        span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: error.message,
-        });
-
-        console.log(error);
-    } finally {
-        span.end();
     }
-}
 
     return (
         <div className="min-h-screen bg-[#262B2D]">
