@@ -20,3 +20,26 @@ MONITORAMENTO DO SISTEMA (APMs)
 https://docs.docker.com/desktop/setup/install/windows-install/?utm_source=chatgpt.com
 
 https://sturdygalleon3157.grafana.net/a/grafana-setupguide-app/onboarding-flow
+
+npm install @opentelemetry/api @opentelemetry/sdk-trace-web @opentelemetry/exporter-trace-otlp-proto @opentelemetry/instrumentation-fetch @opentelemetry/instrumentation-user-interaction @opentelemetry/context-zone
+Esses pacotes fornecem a API/SDK de tracing para Web, exportador OTLP e instrumentações para requisições fetch e interações do usuário. A documentação oficial do OpenTelemetry apresenta sdk-trace-web para aplicações no navegador e as instrumentações web correspondentes.
+
+Explicação sobre instrumentation.js: 
+
+React
+  │
+  ▼
+OpenTelemetry
+  │
+  │ cria traces
+  ▼
+OTLP
+  │
+  │ HTTP
+  ▼
+localhost:4318
+  │
+  ▼
+Tempo
+
+O OpenTelemetry recomenda os exportadores OTLP para enviar os dados de telemetria, e no navegador devemos usar HTTP, pois o exportador gRPC não é suportado no browser.
